@@ -4,8 +4,10 @@ using Knet
 using Statistics
 
 function nonlinearity(x)
-    #    max(0,x)
-    tanh(x)
+    max(0,x)
+    #tanh(x)
+    #max(0,x)+0.1*min(0,x)
+    #x
 end
 
 
@@ -66,7 +68,7 @@ ytrn=convert_to_vector(xtrn,ytrn)
 dtst  =minibatch(xtst,ytst,100;xtype=Array{Float32})
 dtrn = minibatch(xtrn,ytrn,100;xtype=Array{Float32})
 
-layers=[10,10]
+layers=[20,20,20,20,20,20]
 
 pushfirst!(layers,784)
 push!(layers,10)
@@ -83,12 +85,12 @@ w=map(Array{Float32},w)
 
 println(accuracy(w,dtst))
 
-lr=0.2
+lr=0.0005
 train=makeTrain(lr)
 
 println(gpu())
 
-for i=1:30
+for i=1:300
     train(w, dtrn)
     println(i," ",accuracy(w,dtst))
 end
