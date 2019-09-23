@@ -58,7 +58,11 @@ function saveStates(w,data,file,epoch;pdrop=0.5)
             write(file,"batch $batch layer $i epoch $epoch\n")
             x = pdrop.*w[i]*x.+ w[i+1]
             for j=1:length(y)
-                write(file,"$(convert(Int64,y[j])) $(x[:,j])\n")
+                write(file,"$(convert(Int64,y[j])) [")
+                for i=1:length(x[:,j])-1
+                    write(file,"$(x[i,j]),")
+                end
+                write(file,"$(x[end,j])]\n")
             end
             if i<length(w)-1
                 x = relu.(x) # max(0,x)
