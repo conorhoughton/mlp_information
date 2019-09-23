@@ -1,5 +1,6 @@
 
 
+using Random
 using ArgParse
 
 struct State
@@ -13,7 +14,52 @@ struct LabelDistance
 end
 
 
-function calcInfor(labels::Vector{Int64},nearests::Vector{Vector{Int64}},h::Int64,ns::Int64)
+function calcBias(h::Int64,ns::Int64,nt::Int64)
+    #Chu-Vandermonde identity
+    #sum_{r=0}^{h-1} (nt-1)Cr*(n-nt)C(h-r-1)/(n-1)C(h-1) log ns/h (r+1)
+
+    n=ns*nt
+    
+    function probability(h,nt,n,r)
+        
+        hh=h-1
+        tt=nt-1
+        nn=n-1
+
+        t1=1.0::Float64
+        t2=1.0::Float64
+        t3=1.0::Float64
+        
+        for i=0:tt-r-1
+            t1*=(nn-hh-i)/(nn-i)
+        end 
+        if r>0
+            for i=0:r-1
+                t2*=(tt-i)/(nn-tt+1+i)
+                t3*=(hh-i)/(i+1)
+            end
+        end
+
+        t1*t2*t3
+
+    end
+
+    bias=0.0::Float64
+
+    total=0.0
+    for r=0:h-1
+        total+=probability(h,nt,n,r)
+        bias+=probability(h,nt,n,r)*log2(ns*(r+1)/h)
+    end
+
+
+    bias
+    
+end
+        
+
+
+function calcInfor(labels::Vector{Int64},nearests::Vector{Vector{Int64}},h::Int64,ns::Int64,nt::Int64)
     
     information=0.0::Float64
 
@@ -28,7 +74,7 @@ function calcInfor(labels::Vector{Int64},nearests::Vector{Vector{Int64}},h::Int6
         information+=log2(ns*c/h)
     end
 
-    information/length(nearests)
+    information/length(nearests)-calcBias(h,ns,nt)
 
 end
 
@@ -150,12 +196,14 @@ function main()
 
     (inputFile,epoch,layer)=parseArgs()
 
-    nt=15
+    nt=100
 
     states=readStates(inputFile,epoch,layer,nt)
 
     labels=[s.label for s in states]
 
+
+    
     distance_matrix=distanceMatrix(states)
 
     nearests=Vector{Int64}[]
@@ -172,10 +220,12 @@ function main()
     h=15
     ns=10
 
-    information=calcInfor(labels,nearests,h,ns)
 
-    println(information)
-
+    for h=2:nt-1
+        information=calcInfor(labels,nearests,h,ns,nt)
+        println(h," ",information)
+    end
+    
 end
 
 main()
