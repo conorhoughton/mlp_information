@@ -2,6 +2,7 @@
 
 using Random
 using ArgParse
+using LinearAlgebra
 
 struct State
     label::Int64
@@ -151,7 +152,9 @@ end
 function distanceMatrix(states::Vector{State})
 
     function d(v::Vector{Float64},w::Vector{Float64})
-        sum(abs.(v-w))
+#        sum(abs.(v-w))
+        sqrt(dot((v-w),(v-w)))
+#        maximum(abs.(v-w))
     end
     
     n=length(states)
@@ -201,8 +204,6 @@ function main()
     states=readStates(inputFile,epoch,layer,nt)
 
     labels=[s.label for s in states]
-
-
     
     distance_matrix=distanceMatrix(states)
 
