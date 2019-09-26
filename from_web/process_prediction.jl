@@ -39,8 +39,8 @@ function readStates(inputFile::String,epoch,nt::Int64,ns::Int64)
                 else
                     toggleRead=false
                 end
-            elseif toggleRead
 
+            elseif toggleRead
                 values=parse.(Int64,split(line," "))
                 
                 label=values[1]
@@ -48,6 +48,7 @@ function readStates(inputFile::String,epoch,nt::Int64,ns::Int64)
                 count=get!(labelCount,label,0)
 
                 if count<nt
+
                     p[label,values[2]]+=1.0
                     labelCount[label]+=1
                 end
@@ -58,11 +59,27 @@ function readStates(inputFile::String,epoch,nt::Int64,ns::Int64)
     
     total=sum(p)
     p=p./total
-    println(sum(p))
     p
 
 
 end
+
+function calcInfo(p::Array{Float64,2})
+    pj=sum(p,dims=1)
+    pi=sum(p,dims=2)
+
+    info=0.0::Float64
+
+    for i=1:size(p)[1]
+        for j=1:size(p)[2]
+            if p[i,j]!=0.0
+                info +=p[i,j]*log2(p[i,j]/(pi[i]*pj[j]))
+            end
+        end
+    end
+    info
+end
+
 
 
 function main()
@@ -73,11 +90,8 @@ function main()
 
     p=readStates(inputFile,epoch,nt,ns)
 
-    println(typeof(p))
+    println(calcInfo(p))
     
-    println(sum([p[i,i] for i in 1:10]))
-
-
     
 end
 
